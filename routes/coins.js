@@ -5,9 +5,14 @@ const PriceHistory = require('../models/PriceHistory');
 const authMiddleware = require('../middleware/auth');
 
 /**
- * @route   GET /api/coins
- * @desc    모든 활성화된 코인 목록 조회
- * @access  Public
+ * @swagger
+ * /api/coins:
+ *   get:
+ *     summary: 코인 목록 조회 
+ *     description: 모든 활성화된 코인 목록 조회합니다.
+ *     responses:
+ *       200:
+ *         description: 성공
  */
 router.get('/', async (req, res) => {
   try {
@@ -25,12 +30,17 @@ router.get('/', async (req, res) => {
       error: '서버 오류가 발생했습니다'
     });
   }
-});
+}); 
 
 /**
- * @route   GET /api/coins/:id
- * @desc    특정 코인 정보 조회
- * @access  Public
+ * @swagger
+ * /api/coins/{id}:
+ *   get:
+ *     summary: 코인 정보 조회 
+ *     description: 특정 코인 정보 조회
+ *     responses:
+ *       200:
+ *         description: 성공
  */
 router.get('/:id', async (req, res) => {
   try {
@@ -57,11 +67,30 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * @route   GET /api/coins/:id/history
- * @desc    특정 코인의 가격 변동 기록 조회
- * @access  Public
- * @query   duration - 기간 (1h, 24h, 7d, 30d)
+ * @swagger
+ * /api/coins/{id}/history:
+ *   get:
+ *     summary: 특정 코인의 가격 변동 기록 조회
+ *     description: 특정 코인의 가격 변동 기록을 기간(duration)별로 조회합니다.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 코인 ID
+ *       - in: query
+ *         name: duration
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [1h, 24h, 7d, 30d]
+ *         description: 조회할 기간 (1시간, 24시간, 7일, 30일 중 선택)
+ *     responses:
+ *       200:
+ *         description: 성공
  */
+
 router.get('/:id/history', async (req, res) => {
   try {
     const { duration } = req.query;
@@ -86,6 +115,40 @@ router.get('/:id/history', async (req, res) => {
  * @desc    새 코인 추가 (관리자 전용)
  * @access  Private/Admin
  */
+
+/**
+ * @swagger
+ * /api/coins:
+ *   post:
+ *     summary: 새 코인 추가 (관리자 전용)
+ *     description: 새 코인을 추가합니다. (이 기능은 관리자만 사용할 수 있습니다.)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: 코인 이름
+ *               symbol:
+ *                 type: string
+ *                 description: 코인 심볼
+ *               price:
+ *                 type: number
+ *                 description: 초기 가격
+ *     responses:
+ *       201:
+ *         description: 코인 추가 성공
+ *       400:
+ *         description: 잘못된 요청
+ *       401:
+ *         description: 인증 실패
+ */
+
 router.post('/', authMiddleware, async (req, res) => {
   try {
     // 관리자 확인
