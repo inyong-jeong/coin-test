@@ -10,10 +10,13 @@ const authMiddleware = require('../middleware/auth');
  *   get:
  *     summary: 코인 목록 조회 
  *     description: 모든 활성화된 코인 목록 조회합니다.
+ *     tags:
+ *       - Coins
  *     responses:
  *       200:
  *         description: 성공
  */
+
 router.get('/', async (req, res) => {
   try {
     const coins = await Coin.find({ active: true });
@@ -38,6 +41,8 @@ router.get('/', async (req, res) => {
  *   get:
  *     summary: 코인 정보 조회 
  *     description: 특정 코인 정보 조회
+ *     tags:
+ *       - Coins
  *     responses:
  *       200:
  *         description: 성공
@@ -72,6 +77,8 @@ router.get('/:id', async (req, res) => {
  *   get:
  *     summary: 특정 코인의 가격 변동 기록 조회
  *     description: 특정 코인의 가격 변동 기록을 기간(duration)별로 조회합니다.
+ *     tags:
+ *       - Coins
  *     parameters:
  *       - in: path
  *         name: id
@@ -122,6 +129,8 @@ router.get('/:id/history', async (req, res) => {
  *   post:
  *     summary: 새 코인 추가 (관리자 전용)
  *     description: 새 코인을 추가합니다. (이 기능은 관리자만 사용할 수 있습니다.)
+ *     tags:
+ *       - Coins
  *     security:
  *       - bearerAuth: []
  *     requestBody:
