@@ -57,6 +57,16 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
+// 토큰 발행 
+// userSchema.methods.generateAuthToken = async function () {
+//   const user = this
+//   const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, {
+//     expiresIn: JWT_EXPIRES_IN
+//   })
+
+//   return token
+// }
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User; 

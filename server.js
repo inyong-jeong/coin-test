@@ -17,7 +17,7 @@ process.on('uncaughtException', (err) => {
 });
 
 // 라우트 파일
-// const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/auth');
 const coinRoutes = require('./routes/coins');
 // const walletRoutes = require('./routes/wallets');
 // const orderRoutes = require('./routes/orders');
@@ -39,9 +39,9 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'My API',
+      title: '가상거래소 API 명세서',
       version: '1.0.0',
-      description: 'My Express API with Swagger',
+      description: '인터페이스 세부사항 리스트 입니다. 로컬 port는 3000번 입니다.',
     },
     servers: [
       {
@@ -66,7 +66,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 // API 라우트 설정
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/coins', coinRoutes);
 // app.use('/api/wallets', walletRoutes);
 // app.use('/api/orders', orderRoutes);
