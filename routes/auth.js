@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const Coin = require('../models/Coin');
-const PriceHistory = require('../models/PriceHistory');
-const authMiddleware = require('../middleware/auth');
+const User = require('../models/User')
 const ErrorCodes = require('../constants/ErrorCodes');
-const ErrorMessages = require('../constants/ErrorMessages')
-const EmailRegex = require('../constants/Regex')
-const PasswordRegex = require('../constants/Regex')
-const { getUserByEmail, createUser } = require('../db/user')
-const jwt = require('jsonwebtoken')
+const ErrorMessages = require('../constants/ErrorMessages');
+const EmailRegex = require('../constants/Regex');
+const PasswordRegex = require('../constants/Regex');
+const { getUserByEmail, createUser } = require('../db/user');
+
 /**
  * @swagger
  * /api/auth/register:
@@ -52,29 +50,30 @@ router.post('/register', async (req, res) => {
     const {username, email, password, role} = req.body;
 
     if(!username || !email || !password) {
-        return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.RequireMent)
+        return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.RequireMent);
     }
 
     if(!email.match(EmailRegex)) {
-        return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.NotValidEmail)
+        return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.NotValidEmail);
     }
 
     if(!password.match(PasswordRegex)) {
-        return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.NotValidPassword)
+        return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.NotValidPassword);
     }
 
     const existingUser = await getUserByEmail(email);
     if(existingUser) {
-        return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.ExistEmail)
+        return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.ExistEmail);
     }
 
-    const user = await createUser(username, email, password, role);
-    const token = jwt.sign({ user: { userId: user._id, email } }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
-    
+    const user = new User(req.body)
+    const userInfo = await createUser(username, email, password, role);
+    const token = await user.generateAuthToken();
+
     res.json({
       success: true,
-      user: user,
-      token, token
+      user: userInfo,
+      token : token
     });
   } catch (error) {
     console.error('회원가입 오류:', error);
@@ -119,24 +118,19 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const coin = await Coin.findById(req.params.id);
-    
-    if (!coin) {
-      return res.status(404).json({
-        success: false,
-        error: '코인을 찾을 수 없습니다'
-      });
-    }
+    const user = await User.findByCredentials(req.body.email, req.body.password)
+    const token = await user.generateAuthToken()
     
     res.json({
       success: true,
-      data: coin
+      user: user,
+      token : token
     });
   } catch (error) {
-    console.error('코인 정보 조회 오류:', error);
-    res.status(500).json({
+    console.error('로그인 오류:', error);
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });
