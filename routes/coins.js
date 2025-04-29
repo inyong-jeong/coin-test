@@ -132,12 +132,6 @@ router.get('/:id/history', async (req, res) => {
 });
 
 /**
- * @route   POST /api/coins
- * @desc    새 코인 추가 (관리자 전용)
- * @access  Private/Admin
- */
-
-/**
  * @swagger
  * /api/coins:
  *   post:

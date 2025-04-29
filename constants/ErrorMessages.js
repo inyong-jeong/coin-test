@@ -17,7 +17,8 @@ const ErrorMessages = {
     //코인
 
     NotFoundCoin : '코인을 찾을 수 없습니다',
-    ExistCoinSymbol : '이미 등록된 코인 심볼입니다'
+    ExistCoinSymbol : '이미 등록된 코인 심볼입니다',
+    ImpossibleCoin : '현재 거래가 불가능한 코인입니다.',
     //주문
 
     //거래

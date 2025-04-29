@@ -20,7 +20,7 @@ process.on('uncaughtException', (err) => {
 const authRoutes = require('./routes/auth');
 const coinRoutes = require('./routes/coins');
 // const walletRoutes = require('./routes/wallets');
-// const orderRoutes = require('./routes/orders');
+const orderRoutes = require('./routes/orders');
 // const transactionRoutes = require('./routes/transactions');
 
 // WebSocket 핸들러
@@ -83,7 +83,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 app.use('/api/coins', coinRoutes);
 // app.use('/api/wallets', walletRoutes);
-// app.use('/api/orders', orderRoutes);
+app.use('/api/orders', orderRoutes);
 // app.use('/api/transactions', transactionRoutes);
 
 // WebSocket 서버 설정
