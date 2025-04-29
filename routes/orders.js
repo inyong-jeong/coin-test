@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Coin = require('../models/Coin');
 const Order = require('../models/Order')
-const PriceHistory = require('../models/PriceHistory');
 const authMiddleware = require('../middleware/auth');
 const ErrorCodes = require('../constants/ErrorCodes')
 const ErrorMessages = require('../constants/ErrorMessages')
@@ -265,7 +264,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       order : order,
       message : ErrorMessages.OrderCancel
     });
-    
+
   } catch (error) {
     console.error('주문 취소 오류:', error);
     res.status(ErrorCodes.Internal).json({

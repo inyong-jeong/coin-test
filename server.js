@@ -21,7 +21,7 @@ const authRoutes = require('./routes/auth');
 const coinRoutes = require('./routes/coins');
 // const walletRoutes = require('./routes/wallets');
 const orderRoutes = require('./routes/orders');
-// const transactionRoutes = require('./routes/transactions');
+const transactionRoutes = require('./routes/transactions');
 
 // WebSocket 핸들러
 const setupWebSocket = require('./websocket/setup');
@@ -41,7 +41,7 @@ const swaggerOptions = {
     info: {
       title: '가상거래소 API 명세서',
       version: '1.0.0',
-      description: '인터페이스 세부사항 리스트 입니다. 로컬 port는 3000번 입니다. 로그인을 하려면 Authorize 버튼을 눌러 token 을 입력하세요.',
+      description: '인터페이스 세부사항 리스트 입니다. 로컬 port는 3000번 입니다. 로그인을 하려면 Authorize 버튼을 눌러 token 을 입력하세요. 토큰은 회원가입 및 로그인하면 발급받을 수 있습니다.',
     },
     servers: [
       {
@@ -84,7 +84,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/coins', coinRoutes);
 // app.use('/api/wallets', walletRoutes);
 app.use('/api/orders', orderRoutes);
-// app.use('/api/transactions', transactionRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // WebSocket 서버 설정
 const wss = new WebSocket.Server({ server });

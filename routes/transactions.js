@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Coin = require('../models/Coin');
-const PriceHistory = require('../models/PriceHistory');
 const authMiddleware = require('../middleware/auth');
+const ErrorCodes = require('../constants/ErrorCodes');
+const ErrorMessages = require('../constants/ErrorMessages');
+const Transaction = require('../models/Transaction');
 
 /**
  * @swagger
@@ -49,20 +50,21 @@ const authMiddleware = require('../middleware/auth');
  */
 
 
-router.get('/transactions', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    const coins = await Coin.find({ active: true });
+
+    const user = req.user
+    const transactions = await Transaction.findByUser(user._id.toString())
     
     res.json({
       success: true,
-      count: coins.length,
-      data: coins
+      data: transactions
     });
   } catch (error) {
-    console.error('코인 목록 조회 오류:', error);
-    res.status(500).json({
+    console.error('거래 체결 목록 조회 오류:', error);
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });
