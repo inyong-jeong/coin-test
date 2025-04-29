@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const Coin = require('../models/Coin');
-const PriceHistory = require('../models/PriceHistory');
+const Wallet = require('../models/Wallet')
 const authMiddleware = require('../middleware/auth');
-
+const ErrorCodes = require('../constants/ErrorCodes')
+const ErrorMessages = require('../constants/ErrorMessages')
 /**
  * @swagger
  * /api/wallets:
  *   get:
  *     summary: 사용자의 모든 코인 보유량 조회
- *     description: 로그인한 사용자의 모든 코인 보유 내역을 조회합니다.
+ *     description: 사용자의 모든 코인 보유 내역을 조회합니다.
  *     tags:
  *       - Wallets
  *     security:
@@ -37,20 +38,21 @@ const authMiddleware = require('../middleware/auth');
  *         description: 인증 실패 (로그인 필요)
  */
 
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    const coins = await Coin.find({ active: true });
+
+    const user = req.user._id
+    const wallets = await Wallet.findByUser(user)
     
     res.json({
       success: true,
-      count: coins.length,
-      data: coins
+      data: wallets
     });
   } catch (error) {
-    console.error('코인 목록 조회 오류:', error);
-    res.status(500).json({
+    console.error('사용자별 코인 보유량 조회 오류:', error);
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });
