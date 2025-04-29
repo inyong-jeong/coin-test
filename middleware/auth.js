@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const ErrorCodes = require('../constants/ErrorCodes')
+const ErrorMessages = require('../constants/ErrorMessages')
 
 /**
  * 사용자 인증 미들웨어
@@ -8,25 +10,29 @@ const User = require('../models/User');
 module.exports = async function(req, res, next) {
   try {
     // 토큰 확인
-    const token = req.header('x-auth-token');
+    const authHeader  = req.header('Authorization');
     
     // 토큰이 없는 경우
-    if (!token) {
-      return res.status(401).json({
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(ErrorCodes.Un_Authenticated).json({
         success: false,
-        error: '인증 토큰이 없습니다. 로그인이 필요합니다.'
+        error: ErrorMessages.UnAuthenticated
       });
     }
     
+    //Bearer 제거
+    const token = authHeader.split(' ')[1];
+
     // 토큰 검증
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // 사용자 확인
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded._id);
+
     if (!user) {
-      return res.status(401).json({
+      return res.status(ErrorCodes.Un_Authenticated).json({
         success: false,
-        error: '유효하지 않은 토큰입니다.'
+        error: ErrorMessages.UnAuthenticated
       });
     }
     

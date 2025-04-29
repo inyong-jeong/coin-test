@@ -41,13 +41,27 @@ const swaggerOptions = {
     info: {
       title: '가상거래소 API 명세서',
       version: '1.0.0',
-      description: '인터페이스 세부사항 리스트 입니다. 로컬 port는 3000번 입니다.',
+      description: '인터페이스 세부사항 리스트 입니다. 로컬 port는 3000번 입니다. 로그인을 하려면 Authorize 버튼을 눌러 token 을 입력하세요.',
     },
     servers: [
       {
         url: 'http://localhost:3000',
       },
     ],
+    components: { 
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    // security: [ 
+    //   {
+    //     bearerAuth: []
+    //   }
+    // ],
   },
   apis: ['./routes/*.js'],
 };

@@ -3,6 +3,8 @@ const router = express.Router();
 const Coin = require('../models/Coin');
 const PriceHistory = require('../models/PriceHistory');
 const authMiddleware = require('../middleware/auth');
+const ErrorCodes = require('../constants/ErrorCodes')
+const ErrorMessages = require('../constants/ErrorMessages')
 
 /**
  * @swagger
@@ -28,9 +30,9 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('코인 목록 조회 오류:', error);
-    res.status(500).json({
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 }); 
@@ -40,21 +42,33 @@ router.get('/', async (req, res) => {
  * /api/coins/{id}:
  *   get:
  *     summary: 코인 정보 조회 
- *     description: 특정 코인 정보 조회
+ *     description: 특정 코인 정보를 조회합니다.
  *     tags:
  *       - Coins
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: 조회할 코인의 ID
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: 성공
+ *       400:
+ *         description: 잘못된 요청
+ *       404:
+ *         description: 코인을 찾을 수 없음
  */
+
 router.get('/:id', async (req, res) => {
   try {
     const coin = await Coin.findById(req.params.id);
     
     if (!coin) {
-      return res.status(404).json({
+      return res.status(ErrorCodes.Not_Found).json({
         success: false,
-        error: '코인을 찾을 수 없습니다'
+        error: ErrorMessages.NotFoundCoin
       });
     }
     
@@ -64,9 +78,9 @@ router.get('/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('코인 정보 조회 오류:', error);
-    res.status(500).json({
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });
@@ -110,9 +124,9 @@ router.get('/:id/history', async (req, res) => {
     });
   } catch (error) {
     console.error('코인 가격 내역 조회 오류:', error);
-    res.status(500).json({
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });
@@ -146,9 +160,9 @@ router.get('/:id/history', async (req, res) => {
  *               symbol:
  *                 type: string
  *                 description: 코인 심볼
- *               price:
+ *               currentPrice:
  *                 type: number
- *                 description: 초기 가격
+ *                 description: 현재 가격
  *     responses:
  *       201:
  *         description: 코인 추가 성공
@@ -162,9 +176,9 @@ router.post('/', authMiddleware, async (req, res) => {
   try {
     // 관리자 확인
     if (req.user.role !== 'admin') {
-      return res.status(403).json({
+      return res.status(ErrorCodes.Un_Authorized).json({
         success: false,
-        error: '접근 권한이 없습니다'
+        error: ErrorMessages.UnAuthorized
       });
     }
     
@@ -172,18 +186,18 @@ router.post('/', authMiddleware, async (req, res) => {
     
     // 필수 입력값 확인
     if (!symbol || !name || !currentPrice) {
-      return res.status(400).json({
+      return res.status(ErrorCodes.Bad_Request).json({
         success: false,
-        error: '모든 필드를 입력해 주세요'
+        error: ErrorMessages.RequireMent
       });
     }
     
     // 코인 중복 확인
     const existingCoin = await Coin.findOne({ symbol });
     if (existingCoin) {
-      return res.status(400).json({
+      return res.status(ErrorCodes.Bad_Request).json({
         success: false,
-        error: '이미 등록된 코인 심볼입니다'
+        error: ErrorMessages.ExistCoinSymbol
       });
     }
     
@@ -198,15 +212,15 @@ router.post('/', authMiddleware, async (req, res) => {
     // 초기 가격 내역 생성
     await PriceHistory.recordPrice(coin._id, currentPrice);
     
-    res.status(201).json({
+    res.status(ErrorCodes.Created).json({
       success: true,
       data: coin
     });
   } catch (error) {
     console.error('코인 생성 오류:', error);
-    res.status(500).json({
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });

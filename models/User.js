@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
-
+const ErrorMessages = require('../constants/ErrorMessages')
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -68,17 +68,18 @@ userSchema.methods.generateAuthToken = async function () {
   return token
 }
 
+//이메일, 비밀번호 검증 메서드
 userSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email })
 
   if (!user) {
-    throw new Error('Unable to login')
+    throw new Error(ErrorMessages.NonExistEmail)
   }
 
   const isMatch = await bcrypt.compare(password, user.password)
 
   if (!isMatch) {
-    throw new Error('Unable to login 2')
+    throw new Error(ErrorMessages.NotValidUser)
   }
 
   return user
