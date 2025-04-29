@@ -65,6 +65,8 @@ router.get('/:id', async (req, res) => {
   try {
     const coin = await Coin.findById(req.params.id);
     
+    //코인 존재 확인
+    
     if (!coin) {
       return res.status(ErrorCodes.Not_Found).json({
         success: false,

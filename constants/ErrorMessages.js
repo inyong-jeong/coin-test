@@ -1,5 +1,3 @@
-const { Un_Authenticated } = require("./ErrorCodes");
-
 const ErrorMessages = {
 
     //공통
@@ -21,6 +19,9 @@ const ErrorMessages = {
     ImpossibleCoin : '현재 거래가 불가능한 코인입니다.',
     //주문
 
+    NotFoundOrder : '주문을 찾을 수 없습니다.',
+    ImpossibleCancel : '본인의 주문만 취소할 수 있습니다.',
+    OrderCancel : '주문이 취소되었습니다.'
     //거래
 
     //지갑

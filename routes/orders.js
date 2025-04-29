@@ -125,26 +125,21 @@ router.post('/', authMiddleware, async (req, res) => {
  *       401:
  *         description: 인증 실패
  */
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    const coin = await Coin.findById(req.params.id);
     
-    if (!coin) {
-      return res.status(404).json({
-        success: false,
-        error: '코인을 찾을 수 없습니다'
-      });
-    }
+    const user = req.user
+    const orders = await Order.findById(user._id.toString())
     
     res.json({
       success: true,
-      data: coin
+      data: orders
     });
   } catch (error) {
-    console.error('코인 정보 조회 오류:', error);
-    res.status(500).json({
+    console.error('주문 정보 조회 오류:', error);
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });
@@ -175,21 +170,30 @@ router.get('/', async (req, res) => {
  *         description: 인증 실패
  */
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const { duration } = req.query;
-    const priceHistory = await PriceHistory.getHistory(req.params.id, duration);
-    
+
+    const {id} = req.params
+    const order = await Order.findById(id)
+
+    //주문 상세 내역 존재 확인
+
+    if (!order) {
+      return res.status(ErrorCodes.Not_Found).json({
+        success: false,
+        error: ErrorMessages.NotFoundCoin
+      });
+    }
+
     res.json({
       success: true,
-      count: priceHistory.length,
-      data: priceHistory
+      data: order
     });
   } catch (error) {
-    console.error('코인 가격 내역 조회 오류:', error);
-    res.status(500).json({
+    console.error('주문 상세 내역 조회 오류:', error);
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });
@@ -224,53 +228,49 @@ router.get('/:id', async (req, res) => {
 
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
-    // 관리자 확인
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({
+
+    const { id } = req.params;
+
+    //주문 찾기
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(ErrorCodes.Not_Found).json({
         success: false,
-        error: '접근 권한이 없습니다'
+        error: ErrorMessages.NotFoundOrder
       });
     }
-    
-    const { symbol, name, currentPrice } = req.body;
-    
-    // 필수 입력값 확인
-    if (!symbol || !name || !currentPrice) {
-      return res.status(400).json({
+
+    // 내 주문만 취소 가능
+    if (order.user.toString() !== req.user._id.toString()) {
+      return res.status(ErrorCodes.Un_Authorized).json({
         success: false,
-        error: '모든 필드를 입력해 주세요'
+        error: ErrorMessages.ImpossibleCancel
       });
     }
-    
-    // 코인 중복 확인
-    const existingCoin = await Coin.findOne({ symbol });
-    if (existingCoin) {
-      return res.status(400).json({
+
+    // 체결되었거나 취소된건 취소 불가
+    if (order.status !== 'pending') {
+      return res.status(ErrorCodes.Bad_Request).json({
         success: false,
-        error: '이미 등록된 코인 심볼입니다'
+        error: '이미 체결되었거나 취소된 주문은 취소할 수 없습니다.'
       });
     }
-    
-    // 새 코인 생성
-    const coin = await Coin.create({
-      symbol,
-      name,
-      currentPrice,
-      active: true
-    });
-    
-    // 초기 가격 내역 생성
-    await PriceHistory.recordPrice(coin._id, currentPrice);
-    
-    res.status(201).json({
+
+    //주문 상태 변경
+    order.status = 'cancelled'
+    await order.save();
+
+    res.status(ErrorCodes.Success).json({
       success: true,
-      data: coin
+      order : order,
+      message : ErrorMessages.OrderCancel
     });
+    
   } catch (error) {
-    console.error('코인 생성 오류:', error);
-    res.status(500).json({
+    console.error('주문 취소 오류:', error);
+    res.status(ErrorCodes.Internal).json({
       success: false,
-      error: '서버 오류가 발생했습니다'
+      error: ErrorMessages.ServerError
     });
   }
 });
