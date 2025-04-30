@@ -66,14 +66,14 @@ router.post('/register', async (req, res) => {
         return res.status(ErrorCodes.Bad_Request).send(ErrorMessages.ExistEmail);
     }
 
-    const user = new User(req.body)
+    // const user = new User(req.body)
     const userInfo = await createUser(username, email, password, role);
-    const token = await user.generateAuthToken();
+    // const token = await user.generateAuthToken();
 
     res.json({
       success: true,
       user: userInfo,
-      token : token
+      // token : token
     });
   } catch (error) {
     console.error('회원가입 오류:', error);
