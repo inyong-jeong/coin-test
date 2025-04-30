@@ -61,7 +61,7 @@ walletSchema.statics.findByUser = function(userId) {
   return this.find({ user: userId }).populate('coin');
 };
 
-// 입/출금 계좌이체
+// 입/출금 계좌이체 (정적 메서드)
 walletSchema.statics.transfer = async function({ senderUserId, receiverUserId, coinId, amount }) {
   const session = await mongoose.startSession();
   session.startTransaction();

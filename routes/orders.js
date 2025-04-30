@@ -5,6 +5,8 @@ const Order = require('../models/Order')
 const authMiddleware = require('../middleware/auth');
 const ErrorCodes = require('../constants/ErrorCodes')
 const ErrorMessages = require('../constants/ErrorMessages')
+const Redis = require('ioredis');
+const redis = new Redis(); // 기본적으로 localhost:6379에 연결
 
 /**
  * @swagger
@@ -93,6 +95,9 @@ router.post('/', authMiddleware, async (req, res) => {
       amount,
       price
     });
+
+    // 주문이 생성되면 Redis 이벤트 pub
+    await redis.publish('order:new', JSON.stringify({ orderId: order._id }));
     
     res.status(ErrorCodes.Created).json({
       success: true,
