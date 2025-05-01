@@ -5,10 +5,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-
 const swaggerUi = require('swagger-ui-express');
 const swaggerJSDoc = require('swagger-jsdoc');
-
+const { startMatchingEngine } = require('./matching-engine');
 
 // try catch 없이 터진 코드 에러 
 process.on('uncaughtException', (err) => {
@@ -102,6 +101,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  // 매칭 엔진 구동
+  startMatchingEngine()
 });
 
 // try catch 없이 터진 비동기 코드 에러

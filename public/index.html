@@ -8,8 +8,13 @@
 <body>
   <h2> WebSocket 테스트</h2>
   <canvas id="coinChart" width="600" height="300"></canvas>
-  <input id="message" placeholder="보낼 메시지 입력" />
-  <button onclick="sendMessage()">전송</button>
+  
+  <input id="userId" placeholder="사용자 인증할 userId" />
+  <button onclick="auth()">사용자 인증</button>
+  <div style="margin-top: 5px;"></div>
+  <!-- <input id="coinId" placeholder="코인 ID" />
+<button onclick="subscribe()">코인 구독</button>
+<button onclick="unsubscribe()">코인 구독 취소</button> -->
 
   <div id="log" style="margin-top: 20px;"></div>
 
@@ -47,8 +52,15 @@
     };
 
     socket.onmessage = (event) => {
-    //   log(" 받은 메시지: " + event.data);
+
+    
     const msg = JSON.parse(event.data);
+
+      console.log('msg ;;', msg)
+
+      if(msg.type !== "COIN_UPDATE" ) {
+        log(" 받은 메시지: " + event.data);
+      }
 
       if (msg.type === "COIN_UPDATE") {
         const now = new Date().toLocaleTimeString();
@@ -70,13 +82,32 @@
       log(" 연결 종료됨");
     };
 
-    function sendMessage() {
-      const input = document.getElementById("message");
-      const message = input.value;
-      socket.send(message);
-      log(" 보낸 메시지: " + message);
-      input.value = '';
-    }
+    function auth() {
+    const userId = document.getElementById("userId").value;
+    socket.send(JSON.stringify({
+      type: "AUTH",
+      userId
+    }));
+    log("AUTH 요청 전송됨");
+  }
+
+  function subscribe() {
+    const coinId = document.getElementById("coinId").value;
+    socket.send(JSON.stringify({
+      type: "SUBSCRIBE",
+      coinId
+    }));
+    log(`SUBSCRIBE 요청: ${coinId}`);
+  }
+
+  function unsubscribe() {
+    const coinId = document.getElementById("coinId").value;
+    socket.send(JSON.stringify({
+      type: "UNSUBSCRIBE",
+      coinId
+    }));
+    log(`UNSUBSCRIBE 요청: ${coinId}`);
+  }
 
     function log(text) {
       const div = document.getElementById("log");

@@ -178,7 +178,12 @@ function sendErrorMessage(ws, message) {
 // 특정 사용자에게 주문 상태 업데이트 전송
 function sendOrderUpdate(userId, orderData) {
   clients.forEach(client => {
+    
+    console.log('userId :: ', userId)
+    console.log('client :: ', client)
     if (client.userId === userId && client.ws.readyState === WebSocket.OPEN) {
+
+      console.log('주문 전송됨 !! ')
       client.ws.send(JSON.stringify({
         type: 'ORDER_UPDATE',
         data: orderData
@@ -192,6 +197,7 @@ function sendTransactionNotification(buyerId, sellerId, transactionData) {
   clients.forEach(client => {
     if ((client.userId === buyerId || client.userId === sellerId) && 
         client.ws.readyState === WebSocket.OPEN) {
+      console.log('알림 전송됨 !! ')
       client.ws.send(JSON.stringify({
         type: 'TRANSACTION_CREATED',
         data: transactionData
