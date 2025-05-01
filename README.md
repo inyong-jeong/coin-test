@@ -32,7 +32,6 @@ mkdir -p ~/data/db-replica
 ```bash
 mongod --dbpath ~/data/db-replica --replSet rs0
 ```
-터미널 닫으면 안됩니다. ( 실행 중인 상태여야 합니다.)
 
 새 터미널 열고 
 ```bash
