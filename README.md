@@ -92,13 +92,16 @@ http://localhost:3000
 
 ```bash
 coin-test
-├─ constants              
+├─ constants
 │  ├─ ErrorCodes.js
 │  ├─ ErrorMessages.js
 │  └─ Regex.js
 ├─ controllers
-├─ db
-│  └─ user.js
+│  ├─ authController.js
+│  ├─ coinController.js
+│  ├─ orderController.js
+│  ├─ transactionController.js
+│  └─ walletController.js
 ├─ matching-engine.js
 ├─ middleware
 │  └─ auth.js
@@ -138,4 +141,5 @@ ERD
 접근권한 현황  
 
 ### 2.3 데이터베이스 흐름 및 비즈니스 로직
+
 

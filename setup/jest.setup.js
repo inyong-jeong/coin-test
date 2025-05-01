@@ -1,0 +1,1 @@
+require('dotenv').config({ path: '.env.test' }); // 테스트 전 .env 로딩

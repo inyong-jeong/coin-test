@@ -32,7 +32,7 @@ const signUp = async (req, res) => {
         success: true,
         user: userInfo,
       });
-    } catch (error) {
+  } catch (error) {
       console.error('회원가입 오류:', error);
       res.status(ErrorCodes.Internal).json({
         success: false,
