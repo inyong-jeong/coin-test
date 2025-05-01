@@ -85,6 +85,29 @@ userSchema.statics.findByCredentials = async (email, password) => {
   return user
 }
 
+//이메일 중복 체크
+userSchema.statics.getUserByEmail = async (email) => {
+  const user = await User.findOne({ email });
+  return user;
+};
+
+// 계정 생성
+userSchema.statics.createUser = async (
+  username,
+  email,
+  password,
+  role
+) => {
+  const user = await User.create({
+    username,
+    email,
+    password,
+    role
+  });
+  return user;
+};
+
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User; 
