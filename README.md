@@ -86,26 +86,27 @@ http://localhost:3000/api-docs
 **실시간 이벤트 화면 현황**  
 http://localhost:3000
 
-## 2. 백엔드 설계
+## 2. 백엔드
 
 ### 2.1 폴더구조
 
 ```bash
 coin-test
-├─ constants
+├─ constants                            ## 공통 폴더 
 │  ├─ ErrorCodes.js
 │  ├─ ErrorMessages.js
 │  └─ Regex.js
-├─ controllers
+├─ controllers                          ## 비즈니스 로직 컨트롤러
 │  ├─ authController.js
 │  ├─ coinController.js
 │  ├─ orderController.js
 │  ├─ transactionController.js
 │  └─ walletController.js
-├─ matching-engine.js
-├─ middleware
+├─ jest.config.js                       ## jest 루트 설정
+├─ matching-engine.js                   ## 매칭 엔진 파일 ( server.js 에서 실행 )
+├─ middleware                           ## 인증 미들웨어
 │  └─ auth.js
-├─ models
+├─ models                               ## 스키마 설계
 │  ├─ Coin.js
 │  ├─ Order.js
 │  ├─ PriceHistory.js
@@ -113,33 +114,89 @@ coin-test
 │  ├─ TransferLog.js
 │  ├─ User.js
 │  └─ Wallet.js
-├─ package.json
-├─ public
-│  └─ index.html
+├─ package.json                         ## 종속성 파일 관리
+├─ public                               ## 정적 파일 폴더
+│  └─ index.html                        ## 실시간 이벤트 프론트 화면
 ├─ README.md
-├─ routes
+├─ routes                               ## 라우터
 │  ├─ auth.js
 │  ├─ coins.js
 │  ├─ orders.js
 │  ├─ transactions.js
 │  └─ wallets.js
-├─ server.js
-└─ websocket
-   └─ setup.js
+├─ server.js                            ## 진입점
+├─ setup                                ## jest 셋업 폴더
+│  ├─ db.js
+│  ├─ jest.setup.js
+│  └─ mockUser.js
+├─ testserver.js                        ## jest 용 test 서버
+├─ websocket                            ## 실시간 통신 웹소켓 셋업
+│  └─ setup.js
+└─ __tests__                            ## 단위, 통합 테스트 폴더
+   ├─ auth.integration_login.test.js
+   ├─ auth.integration_signup.test.js
+   ├─ auth.unit.test.js
+   ├─ coin.integration.test.js
+   ├─ coin.unit.test.js
+   ├─ order.integration.test.js
+   └─ order.unit.test.js
 
 ```
 
-### 2.2 설계현황
 
-ERD 
-인덱스 현황  
-프로시저 현황  
-뷰 현황  
-잡/스케쥴러 현황  
-트리거, 트랜잭션 현황  
-백업 현황  
-접근권한 현황  
+## 3 테스트
 
-### 2.3 데이터베이스 흐름 및 비즈니스 로직
+### 3.1 기능 구현 현황
+
+| 대분류             | 중분류                             | 구현 현황 | 설명                                                  |
+|--------------------|------------------------------------|-----------|-------------------------------------------------------|
+| 사용자 관리         | 사용자 등록 및 로그인              |  완료    |      |
+| 사용자 관리         | JWT 기반 인증 시스템               |  완료    |          |
+| 코인 정보 관리      | 지원 코인 목록 API                 |  완료    |                |
+| 코인 정보 관리      | 코인 가격 실시간 업데이트          |   완료  |  |
+| 코인 정보 관리      | 가격 변동 기록 저장                |   완료    |    |
+| 지갑 기능           | 사용자별 보유량 관리               |  완료   |         |
+| 지갑 기능           | 입금/출금 기능                     | 완료   |                        |
+| 거래 기능           | 주문 생성 (구매/판매)             |   완료    |      |
+| 거래 기능           | 주문 처리 및 체결                  |  완료   |                 |
+| 거래 기능           | 거래 내역 저장 및 조회             |  완료  |                                                   |
+| 실시간 데이터 제공  | 코인 가격 WebSocket 업데이트         |  완료   |                                                |
+| 실시간 데이터 제공  | 주문 상태 실시간 알림             |  완료 | Redis PubSub 구독 및 채널 구성 완료                    |
+
+
+
+### 3.2 스웨거 수동 테스트 현황
+
+- 특이 사항 
+0. 최초 사용자 등록 및 로그인을 통해 token 과 user 의 id 를 메모해 둡니다. 향후 테스트할 때 필요합니다.
+1. 코인 생성은 admin 계정만 가능합니다. 이후 coinId 를 메모해 둡니다.
+2. 주문 생성은 코인 생성을 하고 발급받은 coinId 를 통해 주문생성이 가능합니다.
+3. 코인 생성이 되면 http://localhost:3000 에서 새로 생성한 코인의 실시간 가격이 조회 됩니다.
+4. http://localhost:3000 에서 user의 id 를 입력하고 사용자 인증 버튼을 눌러야 향후 주문 상태, 거래 상태 업데이트 데이터를 응답받을 수 있습니다.
+5. 신규 주문 생성 ( buy, price, amount) < -> ( sell, price, amount) 이 매칭되면 거래가 체결됩니다. 
+6. 거래가 체결되면 transaction 테이블에서 거래 현황이 조회 됩니다. 이후 주문 상태가 업데이트 됩니다.
+7. 이후 주문 상태 업데이트 알림과 거래 체결 알림을 http://localhost:3000 에서 확인할 수 있습니다.
+
+| 구분         | 메서드 | 경로                              | 구현 현황 | 설명                           | 비고          |
+|--------------|--------|-----------------------------------|------------|--------------------------------|---------------|
+| 사용자 관리   | POST   | /api/auth/register                |  완료     | 새 사용자 등록                 | 로그인 할 때 jwt 발급 |
+| 사용자 관리   | POST   | /api/auth/login                   |  완료     | 로그인 및 JWT 토큰 발급        |               |
+| 코인 정보     | POST    | /api/coins                       | 완료     | 새 코인 추가 ( 관리자 )      | admin 계정만 가능   |
+| 코인 정보     | GET    | /api/coins                        |  완료     | 전체 활성 코인 목록 조회       |               |
+| 코인 정보     | GET    | /api/coins/:id                    |  완료     | 특정 코인 상세 정보 조회       |               |
+| 코인 정보     | GET    | /api/coins/:id/history            |  완료     | 특정 코인의 가격 이력 조회     |              |
+| 지갑 관리     | GET    | /api/wallets                      |  완료   | 사용자의 보유 코인 전체 조회   |              |
+| 지갑 관리     | POST   | /api/wallets/deposit              |  완료   | 코인 입금 요청                 |            |
+| 지갑 관리     | POST   | /api/wallets/withdraw             |  완료   | 코인 출금 요청                 |            |
+| 거래 기능     | POST   | /api/orders                       |  완료     | 주문 생성 (매수/매도)         | Redis pub 사용  |
+| 거래 기능     | GET    | /api/orders                       |  완료     | 사용자 주문 목록 조회          |               |
+| 거래 기능     | GET    | /api/orders/:id                   |  완료     | 특정 주문 상세 조회            |               |
+| 거래 기능     | DELETE | /api/orders/:id                   |  완료     | 주문 취소                      |              |
+| 거래 기능     | GET    | /api/transactions                 |  완료   | 거래 내역 조회                 |               |
+
+
+
+### 3.3 단위 및 통합 테스트
+
 
 
